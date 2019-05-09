@@ -1,0 +1,132 @@
+<html>
+  <head>
+    <h1>Polynomial Regression Using Tensorflow.js </h1> 
+    <!-- Load TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.js"> </script> 
+  
+ 
+    <!-- Place your code in the script tag below. You can also use an external .js file -->
+    <script>
+     
+       let x_vals=[];
+       let y_vals=[];
+       let a,b,c,d;
+
+       const learningRate=1 ; 
+       const optimizer=tf.train.adam(learningRate)
+
+        function setup(){
+            createCanvas(1000,500);
+            //rect(250, 250, 500, 500);
+            background(150);
+            stroke(127, 63, 120);
+            rectMode(CENTER);
+
+            a=tf.variable(tf.scalar(random(-1,1)));
+            b=tf.variable(tf.scalar(random(-1,1)));
+            c=tf.variable(tf.scalar(random(-1,1)));
+            d=tf.variable(tf.scalar(random(-1,1)));   
+
+        }
+
+
+        function loss(pred,labels){
+
+            return pred.sub(labels).square().mean();
+        }
+
+
+        function predict(x){
+            const xs=tf.tensor1d(x);
+            const ys=xs.pow(3).mul(a).add(xs.square().mul(b)).add(xs.mul(c)).add(d);
+
+            return ys;
+        }
+
+
+        function mousePressed(){
+
+           let x= map(mouseX,0,width,-1,1);
+           let y= map(mouseY,0,height,1,-1); 
+
+           x_vals.push(x);
+           y_vals.push(y);  
+        }
+
+
+        function draw(){
+
+
+            tf.tidy(()=>{
+
+                if(x_vals.length>0){
+                    const ys=tf.tensor1d(y_vals);
+                    optimizer.minimize(()=>loss(predict(x_vals),ys));
+                }
+            
+                
+            })
+
+
+
+            background(0);
+            stroke(255);
+            strokeWeight(5);
+
+
+            tf.tidy(()=>{
+
+            for(let i=0;i<x_vals.length;i++){
+                let px=map(x_vals[i],-1,1,0,width);
+                let py=map(y_vals[i],-1,1,height,0);
+                point(px,py);
+            }
+
+            const curveX=[];
+            for(let i=-1;i<1.01;i+=0.05){
+                curveX.push(i);
+
+            }
+
+            const ys=predict(curveX);
+
+            let curveY=ys.dataSync()
+
+            ys.dispose();
+
+
+            beginShape();
+            noFill();
+            stroke(127, 63, 120);
+            strokeWeight(3);
+            rectMode(CENTER);
+
+            for(j=0;j<curveX.length;j++){
+                let x=map(curveX[j],-1,1,0,width);
+                let y=map(curveY[j],-1,1,height,0);
+                vertex(x,y);
+            }
+
+            
+            endShape();
+
+
+            }); 
+
+        }
+
+ 
+    </script> 
+
+    <footer>
+        <p style="color:red">Posted by: Chirath Dasanayaka.</p>
+        
+    </footer>
+
+  </head>
+ 
+  <body>
+  </body>
+</html>
